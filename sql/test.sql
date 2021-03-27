@@ -81,11 +81,7 @@ CREATE TABLE "order"
     "DeliveryAddress"  varchar(50)                      not null,
     "workerID"         int default null,
     "courierOrderID"   int default null
-    --"customerOrderID"  int default null,
-    --"warehouseOrderID" int default null,
-    --constraint FK_workerID foreign key ("workerID") references "employee" ("employeeID"),
-    --constraint FK_customerOrderID foreign key ("customerOrderID") references "customerOrder" ("customerOrderID"),
-    --constraint FK_warehouseOrderID foreign key ("warehouseOrderID") references "warehouseOrder" ("warehouseOrderID")
+
 );
 
 CREATE TABLE "customerOrder"
@@ -124,111 +120,95 @@ CREATE TABLE "orderSpecification"
     constraint FK_productID foreign key ("productID") references "product" ("productID")
 );
 
+DROP SEQUENCE userID_seq;
 CREATE SEQUENCE userID_seq;
 
--- employees
+
+-----------------------------INSERTS-----------------------------
+----------employees----------
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Peter', 'Dlhy', '+421900000001', 'dlhy.peter@gmail.com');
 INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "salary", "bankAccount")
 VALUES (userID_seq.currval, 'Bratislava, Slovakia', '05-AUG-18', 1500, 'SK00000000000000000000000000000001');
-/*
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
-VALUES ('Matej', 'Kratky', '+421900000002', 'matko.kratky@gmail.com', 2);
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
-VALUES ('Elizabeth', 'Pekna', '+421900000003', 'eli.kraska@gmail.com', 3);
- */
-/*
--- customers
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "customerID")
-VALUES ('Eugen', 'Cudny', '+421900000004', 'cudak.eugen@gmail.com', 1);
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "customerID")
-VALUES ('Jozko', 'Vajda', '+421900000005', 'jozino.vajda@gmail.com', 2);
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "customerID")
-VALUES ('Lucia', 'Jemna', '+421900000006', 'jemna.lucka@gmail.com', 3);
--- employees
-INSERT INTO "employee" ("homeAddress", "startDate", "endDate", "salary", "bankAccount")
-VALUES ('Bratislava, Slovakia', '25-MAY-19', '25-AUG-19', 700, 'SK00000000000000000000000000000002');
-INSERT INTO "employee" ("homeAddress", "startDate", "salary", "bankAccount")
-VALUES ('Bratislava, Slovakia', '01-JAN-21', 1000, 'SK00000000000000000000000000000003');
--- customers
-INSERT INTO "customer" ("login", "password", "deliveryAddress")
-VALUES ('eugenko', 'eugen123', 'Bratislava, Slovakia');
-INSERT INTO "customer" ("login", "password", "deliveryAddress")
-VALUES ('jozino', 'vajda123', 'Bratislava, Slovakia');
-INSERT INTO "customer" ("login", "password", "deliveryAddress")
-VALUES ('lucka', 'jemna123', 'Bratislava, Slovakia');
 
+INSERT INTO "user" VALUES (userID_seq.nextval, 'Matej', 'Kratky', '+421900000002', 'matko.kratky@gmail.com');
+INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "endDate", "salary", "bankAccount")
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '25-MAY-19', '25-AUG-19', 700, 'SK00000000000000000000000000000002');
+
+INSERT INTO "user" VALUES (userID_seq.nextval, 'Elizabeth', 'Pekna', '+421900000003', 'eli.kraska@gmail.com');
+INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "salary", "bankAccount")
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '01-JAN-21', 1000, 'SK00000000000000000000000000000003');
+
+----------customers----------
+INSERT INTO "user" VALUES (userID_seq.nextval, 'Eugen', 'Cudny', '+421900000004', 'cudak.eugen@gmail.com');
+INSERT INTO "customer" VALUES (userID_seq.currval, 'eugenko', 'eugen123', 'Slovakia', 'Bratislava');
+
+INSERT INTO "user" VALUES (userID_seq.nextval, 'Jozko', 'Vajda', '+421900000005', 'jozino.vajda@gmail.com');
+INSERT INTO "customer" VALUES (userID_seq.currval, 'jozino', 'vajda123', 'Slovakia', 'Bratislava');
+
+INSERT INTO "user" VALUES (userID_seq.nextval, 'Lucia', 'Jemna', '+421900000006', 'jemna.lucka@gmail.com');
+INSERT INTO "customer" VALUES (userID_seq.currval, 'lucka', 'jemna123', 'Slovakia', 'Bratislava');
+
+----------products----------
 INSERT INTO "product" ("productName", "productDesc", "category", "visibility")
 VALUES ('Stol', 'Okruhly stol pre styroch', 'Kuchyna', 1);
 INSERT INTO "product" ("productName", "productDesc", "category", "visibility")
 VALUES ('Sviecka', 'Sviecka s vonou manga', 'Doplnky do bytu', 1);
-INSERT INTO "product" ("productName", "productDesc", "category", "visibility")
-VALUES ('Zrkadlo', 'Zrkadlo s LED podsvietenim', 'Spalna', 0);
-INSERT INTO "product" ("productName", "productDesc", "category", "visibility")
-VALUES ('Policka', 'Policka na knihy', 'Spalna/Obyvacka', 0);
+INSERT INTO "product" ("productName", "productDesc", "category")
+VALUES ('Zrkadlo', 'Zrkadlo s LED podsvietenim', 'Spalna');
+INSERT INTO "product" ("productName", "productDesc", "category")
+VALUES ('Policka', 'Policka na knihy', 'Spalna/Obyvacka');
 INSERT INTO "product" ("productName", "productDesc", "category", "visibility")
 VALUES ('Stolicka', 'Pevna stolicka so zeleznou konstrukciou', 'Kuchyna', 1);
 
+----------prices----------
 INSERT INTO "priceHistory" ("startDate", "endDate", "price", "productID")
 VALUES ('01-Jan-21', '01-Mar-21', 248.99, 1);
-INSERT INTO "priceHistory" ("startDate", "endDate", "price", "productID")
-VALUES ('01-Jan-21', '01-Mar-21', 5.99, 2);
-INSERT INTO "priceHistory" ("startDate", "endDate", "price", "productID")
-VALUES ('01-Jan-21', '01-Mar-21', 60, 3);
-INSERT INTO "priceHistory" ("startDate", "endDate", "price", "productID")
-VALUES ('01-Jan-21', '01-Mar-21', 20, 4);
-INSERT INTO "priceHistory" ("startDate", "endDate", "price", "productID")
-VALUES ('01-Jan-21', '01-Mar-21', 35.99, 5);
+INSERT INTO "priceHistory" ("startDate", "price", "productID")
+VALUES ('02-Mar-21', 235, 1);
+INSERT INTO "priceHistory" ("startDate", "price", "productID")
+VALUES ('01-Jan-21', 5.99, 2);
+INSERT INTO "priceHistory" ("startDate", "price", "productID")
+VALUES ('01-Jan-21', 60, 3);
+INSERT INTO "priceHistory" ("startDate", "price", "productID")
+VALUES ('01-Jan-21', 20, 4);
+INSERT INTO "priceHistory" ("startDate", "price", "productID")
+VALUES ('01-Jan-21', 35.99, 5);
 
-INSERT INTO "warehouseStock" ("productID", "quantity")
-VALUES (1, 5);
-INSERT INTO "warehouseStock" ("productID", "quantity")
-VALUES (2, 20);
-INSERT INTO "warehouseStock" ("productID", "quantity")
-VALUES (3, 0);
-INSERT INTO "warehouseStock" ("productID", "quantity")
-VALUES (4, 0);
-INSERT INTO "warehouseStock" ("productID", "quantity")
-VALUES (5, 10);
+----------stock----------
+INSERT INTO "warehouseStock" ("productID", "quantity")  VALUES (1, 5);
+INSERT INTO "warehouseStock" ("productID", "quantity")  VALUES (2, 20);
+INSERT INTO "warehouseStock" ("productID")              VALUES (3);
+INSERT INTO "warehouseStock" ("productID")              VALUES (4);
+INSERT INTO "warehouseStock" ("productID", "quantity")  VALUES (5, 10);
 
-INSERT INTO "customerOrder" ("customerID", "customerOrderStatus")
-VALUES (1, 'Na ceste');
-INSERT INTO "customerOrder" ("customerID", "customerOrderStatus")
-VALUES (2, 'Nedostupne');
-INSERT INTO "customerOrder" ("customerID", "customerOrderStatus")
-VALUES (3, 'Dorucene');
+----------customer_orders----------
+INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress")
+VALUES ('25-JAN-21', 31.98, 'Tulipánová 35, Bratislava, Slovakia');
+INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID")
+VALUES ('26-JAN-21', 120, 'Agátová 75, Bratislava, Slovakia', 1);
+INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID")
+VALUES ('27-JAN-21', 20, 'Balíková 111/23, Bratislava, Slovakia', 3, 77);
 
-INSERT INTO "customerComplaint" ("complaintDetail", "compaintDate", "customerComplaintStatus")
-VALUES ('Preco to tak dlho trva???', '01-AUG-21', 'Spracovava sa');
+INSERT INTO "customerOrder" VALUES (1, 4, 'Na ceste');
+INSERT INTO "customerOrder" VALUES (2, 4, 'Nedostupne');
+INSERT INTO "customerOrder" VALUES (3, 5, 'Dorucene');
 
-INSERT INTO "warehouseOrder" ("supplier", "warehouseOrderStatus")
-VALUES ('Drevo s.r.o', 'Vybavena');
-INSERT INTO "warehouseOrder" ("supplier", "warehouseOrderStatus")
-VALUES ('Drevo s.r.o', 'Spracovava sa');
--- customer order
-INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID", "customerOrderID")
-VALUES ('25-JAN-21', 11.98, 'Bratislava, Slovakia', 1, 111, 1);
-INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "customerOrderID")
-VALUES ('26-JAN-21', 120, 'Bratislava, Slovakia', 1, 1);
-INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID", "customerOrderID")
-VALUES ('27-JAN-21', 20, 'Bratislava, Slovakia', 3, 222, 3);
--- warehouse order
-INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "customerOrderID")
-VALUES ('20-JAN-21', 1000, 'Bratislava, Slovakia', 1, 1);
-INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "customerOrderID")
-VALUES ('15-JAN-21', 300, 'Bratislava, Slovakia', 1, 1);
+INSERT INTO "orderSpecification" VALUES (1, 2, 2);
+INSERT INTO "orderSpecification" VALUES (1, 4, 1);
+INSERT INTO "orderSpecification" VALUES (2, 3, 2);
+INSERT INTO "orderSpecification" VALUES (3, 4, 1);
 
-INSERT INTO "orderSpecification" ("orderID", "productID", "productQuantity")
-VALUES (1, 1, 2);
-INSERT INTO "orderSpecification" ("orderID", "productID", "productQuantity")
-VALUES (2, 1, 2);
-INSERT INTO "orderSpecification" ("orderID", "productID", "productQuantity")
-VALUES (3, 1, 2);
+----------complaint----------
+INSERT INTO "customerComplaint" VALUES (2, 'Preco to tak dlho trva??? Prajem pekny den', '01-Mar-21', 'Spracovava sa');
 
-INSERT INTO "orderSpecification" ("orderID", "productID", "productQuantity")
-VALUES (4, 1, 10);
-INSERT INTO "orderSpecification" ("orderID", "productID", "productQuantity")
-VALUES (5, 1, 5);
- */
+----------warehouse_orders----------
+INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID")
+VALUES ('20-JAN-21', 1000, 'Západná 721, Bratislava, Slovakia', 1, 1);
+INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID")
+VALUES ('15-JAN-21', 300, 'Západná 721, Bratislava, Slovakia', 2, 1);
 
-SELECT * from "user";
-SELECT * from "employee";
+INSERT INTO "warehouseOrder" VALUES (1, 'Drevo s.r.o', 'Vybavena');
+INSERT INTO "warehouseOrder" VALUES (2, 'Drevo s.r.o', 'Na ceste');
+
+INSERT INTO "orderSpecification" VALUES (4, 1, 10);
+INSERT INTO "orderSpecification" VALUES (5, 1, 5);
