@@ -117,6 +117,8 @@ CREATE TABLE "orderSpecification"
     constraint FK_orderID foreign key ("orderID") references "order" ("orderId"),
     constraint FK_productOrderID foreign key ("productID") references "product" ("productId")
 );
+
+
 -- employees
 INSERT INTO "employee" ("homeAddress", "startDate", "salary", "bankAccount")
 VALUES ('Bratislava, Slovakia', '05-AUG-18', 1500, 'SK00000000000000000000000000000001');
@@ -124,6 +126,18 @@ INSERT INTO "employee" ("homeAddress", "startDate", "endDate", "salary", "bankAc
 VALUES ('Bratislava, Slovakia', '25-MAY-19', '25-AUG-19', 700, 'SK00000000000000000000000000000002');
 INSERT INTO "employee" ("homeAddress", "startDate", "salary", "bankAccount")
 VALUES ('Bratislava, Slovakia', '01-JAN-21', 1000, 'SK00000000000000000000000000000003');
+
+INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
+VALUES ('Peter', 'Dlhy', '+421900000001', 'dlhy.peter@gmail.com', 1);
+INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
+VALUES ('Matej', 'Kratky', '+421900000002', 'matko.kratky@gmail.com', 2);
+INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
+VALUES ('Elizabeth', 'Pekna', '+421900000003', 'eli.kraska@gmail.com', 3);
+
+
+
+
+
 -- customers
 INSERT INTO "customer" ("login", "password", "deliveryAddress")
 VALUES ('eugenko', 'eugen123', 'Bratislava, Slovakia');
@@ -132,12 +146,6 @@ VALUES ('jozino', 'vajda123', 'Bratislava, Slovakia');
 INSERT INTO "customer" ("login", "password", "deliveryAddress")
 VALUES ('lucka', 'jemna123', 'Bratislava, Slovakia');
 -- employees
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
-VALUES ('Peter', 'Dlhy', '+421900000001', 'dlhy.peter@gmail.com', 1);
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
-VALUES ('Matej', 'Kratky', '+421900000002', 'matko.kratky@gmail.com', 2);
-INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "employeeID")
-VALUES ('Elizabeth', 'Pekna', '+421900000003', 'eli.kraska@gmail.com', 3);
 -- customers
 INSERT INTO "user" ("firstName", "lastName", "phoneNumber", "emailAddress", "customerID")
 VALUES ('Eugen', 'Cudny', '+421900000004', 'cudak.eugen@gmail.com', 1);
