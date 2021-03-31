@@ -23,6 +23,7 @@ CREATE TABLE "user"
     "emailAddress" varchar(50)                      not null,
     CONSTRAINT email_format
         CHECK (REGEXP_LIKE("emailAddress", '^[a-zA-Z0-9]([a-zA-Z0-9]|[._\-][a-zA-Z0-9])*@[a-zA-Z0-9]([a-zA-Z0-9]|\-[a-zA-Z0-9])*\.[a-z][a-z]+$'))
+    CONSTRAINT phone_format CHECK (REGEXP_LIKE("phoneNumber" '^\+[0-9]{12}$'))
 );
 
 CREATE TABLE "employee"
