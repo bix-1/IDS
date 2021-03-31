@@ -20,9 +20,9 @@ CREATE TABLE "user"
     "firstName"    varchar(50)                      not null,
     "lastName"     varchar(50)                      not null,
     "phoneNumber"  varchar(50)                      not null, -- varchar kvoli +421..
-    "emailAddress" varchar(50)                      not null
-    CONSTRAINT emailAddress_format
-        CHECK (REGEXP_LIKE("emailAddress", '^[a-zA-Z0-9]([a-zA-Z0-9]|[\.\_\-][a-zA-Z0-9])*@[a-zA-Z0-9]([a-zA-Z0-9]|\-[a-zA-Z0-9])*\.[a-z][a-z]+$'))
+    "emailAddress" varchar(50)                      not null,
+    CONSTRAINT email_format
+        CHECK (REGEXP_LIKE("emailAddress", '^[a-zA-Z0-9]([a-zA-Z0-9]|[._\-][a-zA-Z0-9])*@[a-zA-Z0-9]([a-zA-Z0-9]|\-[a-zA-Z0-9])*\.[a-z][a-z]+$'))
 );
 
 CREATE TABLE "employee"
@@ -33,18 +33,10 @@ CREATE TABLE "employee"
     "endDate"     date default null,
     "salary"      int  default 0                   not null,
     "bankAccount" varchar(30)                      not null, -- iban
-    constraint FK_employeeID foreign key ("employeeID") references "user" ("userID")
+    constraint FK_employeeID foreign key ("employeeID") references "user" ("userID"),
     CONSTRAINT bankAccount_format
-        CHECK (REGEXP_LIKE("bankAccount", '^(?:([0-9]{1,6})-)?([0-9]{2,10})\/([0-9]{4})$')
-            AND LPAD(REGEXP_SUBSTR("bankAccount", '^\.\-')), 6, '0')
-        )
+        CHECK (REGEXP_LIKE("bankAccount", '^((([0-9]{1,6})-)([0-9]{2,10})/([0-9]{4}))|(([0-9]{2,10})/([0-9]{4}))$'))
 );
-
-SELECT LPAD(REGEXP_SUBSTR ("bankAccount", '^.*\-'), 6, '0')
-FROM "employee";
-
-SELECT REGEXP_SUBSTR ("bankAccount", '^.*\/')
-FROM "employee";
 
 CREATE TABLE "customer"
 (
