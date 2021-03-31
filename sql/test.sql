@@ -21,6 +21,8 @@ CREATE TABLE "user"
     "lastName"     varchar(50)                      not null,
     "phoneNumber"  varchar(50)                      not null, -- varchar kvoli +421..
     "emailAddress" varchar(50)                      not null
+    CONSTRAINT emailAddress_format
+        CHECK (REGEXP_LIKE("emailAddress", '^[a-zA-Z0-9]([a-zA-Z0-9]|[\.\_\-][a-zA-Z0-9])*@[a-zA-Z0-9]([a-zA-Z0-9]|\-[a-zA-Z0-9])*\.[a-z][a-z]+$'))
 );
 
 CREATE TABLE "employee"
@@ -30,9 +32,19 @@ CREATE TABLE "employee"
     "startDate"   date                             not null,
     "endDate"     date default null,
     "salary"      int  default 0                   not null,
-    "bankAccount" varchar(34)                      not null, -- iban
+    "bankAccount" varchar(30)                      not null, -- iban
     constraint FK_employeeID foreign key ("employeeID") references "user" ("userID")
+    CONSTRAINT bankAccount_format
+        CHECK (REGEXP_LIKE("bankAccount", '^(?:([0-9]{1,6})-)?([0-9]{2,10})\/([0-9]{4})$')
+            AND LPAD(REGEXP_SUBSTR("bankAccount", '^\.\-')), 6, '0')
+        )
 );
+
+SELECT LPAD(REGEXP_SUBSTR ("bankAccount", '^.*\-'), 6, '0')
+FROM "employee";
+
+SELECT REGEXP_SUBSTR ("bankAccount", '^.*\/')
+FROM "employee";
 
 CREATE TABLE "customer"
 (
@@ -128,15 +140,15 @@ CREATE SEQUENCE userID_seq;
 ----------employees----------
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Peter', 'Dlhy', '+421900000001', 'dlhy.peter@gmail.com');
 INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "salary", "bankAccount")
-VALUES (userID_seq.currval, 'Bratislava, Slovakia', '05-AUG-18', 1500, 'SK00000000000000000000000000000001');
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '05-AUG-18', 1500, '111333/2700');
 
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Matej', 'Kratky', '+421900000002', 'matko.kratky@gmail.com');
 INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "endDate", "salary", "bankAccount")
-VALUES (userID_seq.currval, 'Bratislava, Slovakia', '25-MAY-19', '25-AUG-19', 700, 'SK00000000000000000000000000000002');
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '25-MAY-19', '25-AUG-19', 700, '86-199488014/1111');
 
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Elizabeth', 'Pekna', '+421900000003', 'eli.kraska@gmail.com');
 INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "salary", "bankAccount")
-VALUES (userID_seq.currval, 'Bratislava, Slovakia', '01-JAN-21', 1000, 'SK00000000000000000000000000000003');
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '01-JAN-21', 1000, '111333/2700');
 
 ----------customers----------
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Eugen', 'Cudny', '+421900000004', 'cudak.eugen@gmail.com');
