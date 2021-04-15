@@ -152,8 +152,7 @@ INSERT INTO "customer" VALUES (userID_seq.currval, 'eugenko', 'eugen123', 'Slova
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Jozko', 'Vajda', '+421900000005', 'jozino.vajda@gmail.com');
 INSERT INTO "customer" VALUES (userID_seq.currval, 'jozino', 'vajda123', 'Slovakia', 'Bratislava');
 
-INSERT INTO "user" VALUES (userID_seq.nextval, 'Lucia', 'Jemna', '+421900000006', 'jemna.lucka@gmail.com');
-INSERT INTO "customer" VALUES (userID_seq.currval, 'lucka', 'jemna123', 'Slovakia', 'Bratislava');
+INSERT INTO "customer" VALUES (1, 'peter', 'dlhy123', 'Slovakia', 'Bratislava');
 
 ----------products----------
 INSERT INTO "product" ("productName", "productDesc", "category", "visibility")
@@ -192,7 +191,7 @@ INSERT INTO "warehouseStock" ("productID", "quantity")  VALUES (5, 10);
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress")
 VALUES ('25-JAN-21', 31.98, 'Tulipánová 35, Bratislava, Slovakia');
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID")
-VALUES ('26-JAN-21', 120, 'Agátová 75, Bratislava, Slovakia', 1);
+VALUES ('26-JAN-21', 180, 'Agátová 75, Bratislava, Slovakia', 1);
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID")
 VALUES ('27-JAN-21', 20, 'Balíková 111/23, Bratislava, Slovakia', 3, 77);
 
@@ -202,7 +201,7 @@ INSERT INTO "customerOrder" VALUES (3, 5, 'Dorucene');
 
 INSERT INTO "orderSpecification" VALUES (1, 2, 2);
 INSERT INTO "orderSpecification" VALUES (1, 4, 1);
-INSERT INTO "orderSpecification" VALUES (2, 3, 2);
+INSERT INTO "orderSpecification" VALUES (2, 3, 3);
 INSERT INTO "orderSpecification" VALUES (3, 4, 1);
 
 ----------complaint----------
@@ -219,3 +218,86 @@ INSERT INTO "warehouseOrder" VALUES (2, 'Drevo s.r.o', 'Na ceste');
 
 INSERT INTO "orderSpecification" VALUES (4, 1, 10);
 INSERT INTO "orderSpecification" VALUES (5, 1, 5);
+
+
+-----------------------------SELECTS-----------------------------
+/* TODO detele this list & uncomment all selects LEAVING THE DESCRIPTIONS
+   2 dotazy využívající spojení dvou tabulek
+   1 využívající spojení tří tabulek
+   2 dotazy s klauzulí GROUP BY a agregační funkcí
+   1 dotaz obsahující predikát EXISTS
+   1 dotaz s predikátem IN s vnořeným selectem
+ */
+
+
+-- Koľko kusov tovaru obsahuje objednávka 1?
+/*
+SELECT SUM(o."productQuantity")
+FROM "customerOrder" c JOIN "orderSpecification" o ON c."customerOrderID" = o."orderID"
+WHERE c."customerOrderID" = 1;
+ */
+
+-- Koľko je na sklade tovaru podľa kategórie?
+/*
+SELECT p."category", SUM(ws."quantity")
+FROM "product" p, "warehouseStock" ws
+WHERE p."productID" = ws."productID"
+GROUP BY p."category";
+ */
+
+-- Ktorí zamestanci majú aj zákaznícke účty?
+/*
+SELECT u."userID", u."firstName", u."lastName"
+FROM "user" u, "employee" e, "customer" c
+WHERE e."employeeID" = c."customerID" AND u."userID" = e."employeeID";
+*/
+
+-- Na objednávky ktorých zamestnancov nebola nikdy podaná sťažnosť?
+/*
+SELECT * FROM "order";
+SELECT * FROM "customerComplaint";
+
+SELECT e."employeeID", u."firstName", u."lastName"
+FROM "user" u, "employee" e
+WHERE e."employeeID" = u."userID" AND NOT EXISTS(
+        SELECT *
+        FROM "customerComplaint" c JOIN "order" o ON c."customerOrderID" = o."orderID"
+        WHERE o."workerID" = e."employeeID"
+);
+ */
+
+-- Ktorí zákazníci si už objednali spolu za viac ako 20e?
+/*
+SELECT CO."customerID", SUM(O."orderPrice")
+FROM "customerOrder" CO, "order" O
+WHERE CO."customerOrderID" = O."orderID"
+GROUP BY CO."customerID"
+HAVING SUM(O."orderPrice") >= 20;
+*/
+
+-- Ktorý produkt si zákazníci objednávali najviac?
+/*
+SELECT * FROM "orderSpecification";
+SELECT P."productID", P."productName", sums.sumOrds
+FROM (
+         SELECT OS."productID" pID, SUM(OS."productQuantity") sumOrds
+         FROM "order" O
+                  JOIN "customerOrder" CO ON O."orderID" = CO."customerOrderID"
+                  NATURAL JOIN "orderSpecification" OS
+         GROUP BY OS."productID"
+         ORDER BY sumOrds desc
+     ) sums, "product" P
+WHERE rownum = 1 AND P."productID" = sums.pID;
+*/
+
+-- Ktoré už nedostupné produkty si zákazníci objednávali?
+/*
+SELECT os."productID"
+FROM "orderSpecification" os JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
+WHERE os."productID" IN (
+    SELECT "productID"
+    FROM "product"
+    WHERE "visibility" = 0
+    )
+GROUP BY os."productID";
+ */
