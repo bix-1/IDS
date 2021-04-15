@@ -22,8 +22,8 @@ CREATE TABLE "user"
     "phoneNumber"  varchar(50)                      not null, -- varchar kvoli +421..
     "emailAddress" varchar(50)                      not null,
     CONSTRAINT email_format
-        CHECK (REGEXP_LIKE("emailAddress", '^[a-zA-Z0-9]([a-zA-Z0-9]|[._\-][a-zA-Z0-9])*@[a-zA-Z0-9]([a-zA-Z0-9]|\-[a-zA-Z0-9])*\.[a-z][a-z]+$'))
-    CONSTRAINT phone_format CHECK (REGEXP_LIKE("phoneNumber" '^\+[0-9]{12}$'))
+        CHECK (REGEXP_LIKE("emailAddress", '^[a-zA-Z0-9]([a-zA-Z0-9]|[._\-][a-zA-Z0-9])*@[a-zA-Z0-9]([a-zA-Z0-9]|\-[a-zA-Z0-9])*\.[a-z][a-z]+$')),
+    CONSTRAINT phone_format CHECK (REGEXP_LIKE("phoneNumber", '^\+[0-9]{12}$'))
 );
 
 CREATE TABLE "employee"
@@ -66,12 +66,13 @@ CREATE TABLE "priceHistory"
     "startDate" date not null,
     "endDate"   date default null,
     "price"     float not null,
+    constraint PK_priceHistory primary key ("productID", "startDate"),
     constraint FK_priceProductID foreign key ("productID") references "product" ("productID")
 );
 
 CREATE TABLE "warehouseStock"
 (
-    "productID" int not null,
+    "productID" int not null primary key,
     "quantity"  int default 0 not null,
     constraint FK_whStockProductID foreign key ("productID") references "product" ("productID")
 );
@@ -121,6 +122,7 @@ CREATE TABLE "orderSpecification"
     "orderID"         int           not null,
     "productID"       int           not null,
     "productQuantity" int default 1 not null,
+    constraint PK_orderSpecification primary key ("orderID", "productID"),
     constraint FK_orderID foreign key ("orderID") references "order" ("orderID"),
     constraint FK_productID foreign key ("productID") references "product" ("productID")
 );
