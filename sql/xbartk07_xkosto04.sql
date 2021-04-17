@@ -231,31 +231,28 @@ INSERT INTO "orderSpecification" VALUES (5, 1, 5);
 
 
 -- Koľko kusov tovaru obsahuje objednávka 1?
-/*
+
 SELECT SUM(o."productQuantity")
 FROM "customerOrder" c JOIN "orderSpecification" o ON c."customerOrderID" = o."orderID"
 WHERE c."customerOrderID" = 1;
- */
+
 
 -- Koľko je na sklade tovaru podľa kategórie?
-/*
+
 SELECT p."category", SUM(ws."quantity")
 FROM "product" p, "warehouseStock" ws
 WHERE p."productID" = ws."productID"
 GROUP BY p."category";
- */
+
 
 -- Ktorí zamestanci majú aj zákaznícke účty?
-/*
+
 SELECT u."userID", u."firstName", u."lastName"
 FROM "user" u, "employee" e, "customer" c
 WHERE e."employeeID" = c."customerID" AND u."userID" = e."employeeID";
-*/
+
 
 -- Na objednávky ktorých zamestnancov nebola nikdy podaná sťažnosť?
-/*
-SELECT * FROM "order";
-SELECT * FROM "customerComplaint";
 
 SELECT e."employeeID", u."firstName", u."lastName"
 FROM "user" u, "employee" e
@@ -264,20 +261,19 @@ WHERE e."employeeID" = u."userID" AND NOT EXISTS(
         FROM "customerComplaint" c JOIN "order" o ON c."customerOrderID" = o."orderID"
         WHERE o."workerID" = e."employeeID"
 );
- */
+
 
 -- Ktorí zákazníci si už objednali spolu za viac ako 20e?
-/*
+
 SELECT CO."customerID", SUM(O."orderPrice")
 FROM "customerOrder" CO, "order" O
 WHERE CO."customerOrderID" = O."orderID"
 GROUP BY CO."customerID"
 HAVING SUM(O."orderPrice") >= 20;
-*/
+
 
 -- Ktorý produkt si zákazníci objednávali najviac?
-/*
-SELECT * FROM "orderSpecification";
+
 SELECT P."productID", P."productName", sums.sumOrds
 FROM (
          SELECT OS."productID" pID, SUM(OS."productQuantity") sumOrds
@@ -288,10 +284,10 @@ FROM (
          ORDER BY sumOrds desc
      ) sums, "product" P
 WHERE rownum = 1 AND P."productID" = sums.pID;
-*/
+
 
 -- Ktoré už nedostupné produkty si zákazníci objednávali?
-/*
+
 SELECT os."productID"
 FROM "orderSpecification" os JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
 WHERE os."productID" IN (
@@ -300,4 +296,3 @@ WHERE os."productID" IN (
     WHERE "visibility" = 0
     )
 GROUP BY os."productID";
- */
