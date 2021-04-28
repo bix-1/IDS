@@ -221,6 +221,7 @@ INSERT INTO "orderSpecification" VALUES (5, 1, 5);
 
 
 -----------------------------SELECTS-----------------------------
+/*
 -- Koľko kusov tovaru obsahuje objednávka 1?
 SELECT SUM(o."productQuantity")
 FROM "customerOrder" c JOIN "orderSpecification" o ON c."customerOrderID" = o."orderID"
@@ -274,3 +275,40 @@ WHERE os."productID" IN (
     WHERE "visibility" = 0
     )
 GROUP BY os."productID";
+*/
+
+-----------------------------TRIGGERS-----------------------------
+-- Automatické doplnenie dátumu ukončenia ceny produktu po zadaní novej ceny
+CREATE OR REPLACE TRIGGER price_update
+BEFORE INSERT ON "priceHistory"
+FOR EACH ROW
+BEGIN
+UPDATE "priceHistory" SET "endDate" = :new."startDate"
+WHERE "productID" = :new."productID" AND "endDate" IS NULL;
+END;
+
+-- PRED priceHistory
+SELECT * FROM "priceHistory" WHERE "productID" = 5;
+INSERT INTO "priceHistory" ("startDate", "price", "productID")
+VALUES ('10-Feb-21', 15, 5);
+INSERT INTO "priceHistory" ("startDate", "price", "productID")
+VALUES ('10-Mar-21', 25, 5);
+-- PO priceHistory
+SELECT * FROM "priceHistory" WHERE "productID" = 5;
+
+
+CREATE OR REPLACE TRIGGER auto_id
+    BEFORE INSERT ON "user"
+    FOR EACH ROW
+BEGIN
+    IF: NEW."userID" IS NULL THEN
+        :NEW."userID" := userID_seq.nextval;
+    END IF;
+END;
+
+-- PRED user
+SELECT * FROM "user";
+INSERT INTO "user"("firstName", "lastName", "phoneNumber", "emailAddress") VALUES ('Emanuel', 'Cudzi', '+421900000004', 'cudzi.emanuel@gmail.com');
+INSERT INTO "user"("firstName", "lastName", "phoneNumber", "emailAddress") VALUES ('Ivan', 'Krehky', '+421900000004', 'krehky.ivan@gmail.com');
+-- PO user
+SELECT * FROM "user";
