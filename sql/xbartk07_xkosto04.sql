@@ -336,3 +336,46 @@ END;
 SELECT * FROM "employee";
 CALL raise_by_date('2020-01-01');
 SELECT * FROM "employee";
+
+
+
+
+
+
+
+
+
+
+GRANT ALL ON "user" TO "XBARTK07";
+GRANT ALL ON "employee" TO "XBARTK07";
+GRANT ALL ON "customer" TO "XBARTK07";
+GRANT ALL ON "order" TO "XBARTK07";
+GRANT ALL ON "customerOrder" TO "XBARTK07";
+GRANT ALL ON "warehouseOrder" TO "XBARTK07";
+GRANT ALL ON "customerComplaint" TO "XBARTK07";
+GRANT ALL ON "orderSpecification" TO "XBARTK07";
+GRANT ALL ON "product" TO "XBARTK07";
+GRANT ALL ON "warehouseStock" TO "XBARTK07";
+GRANT ALL ON "priceHistory" TO "XBARTK07";
+
+GRANT EXECUTE on "customer_total_money_spent" TO "XBARTK07";
+
+DROP MATERIALIZED VIEW "customer_total_money_spent";
+CREATE MATERIALIZED VIEW "customer_total_money_spent" AS
+    SELECT "u"."userID", "u"."firstName", "u"."lastName", SUM("o"."orderPrice") as "totalSpent"
+    FROM "customerOrder" "co","order" "o","user" "u"
+    LEFT JOIN "customer" "c" on "u"."userID" = "c"."customerID"
+    WHERE "co"."customerID" = "u"."userID" and "co"."customerOrderID" = "o"."orderID"
+    GROUP BY "u"."userID", "u"."firstName", "u"."lastName";
+
+-- Vypis materializovaneho pohladu
+select * FROM "customer_total_money_spent";
+
+-- Pridanie dalsej objednavky
+INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress") VALUES ('20-FEB-21', 10., 'Tulipánová 35, Bratislava, Slovakia');
+INSERT INTO "customerOrder" VALUES (6, 4, 'Na ceste');
+select * FROM "order";
+select * FROM "customerOrder";
+
+-- Materializovany pohlad sa nezmenil
+select * FROM "customer_total_money_spent";
