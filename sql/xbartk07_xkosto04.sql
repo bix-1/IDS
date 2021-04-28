@@ -316,7 +316,7 @@ SELECT * FROM "user";
 
 -----------------------------PROCEDURES-----------------------------
 -- Zvýš plat všetkým aktuálnym zamestancom ktorí nastúpili pred daným dátumom
-CREATE OR REPLACE PROCEDURE raise_by_date (date_str VARCHAR) IS
+CREATE OR REPLACE PROCEDURE raise_by_date (date_str VARCHAR, ammount INTEGER) IS
     sal "employee"."salary"%type;
     eID "employee"."employeeID"%type;
     CURSOR emps IS SELECT "employeeID", "salary"
@@ -327,18 +327,53 @@ BEGIN
         FETCH emps INTO eID, sal;
         EXIT WHEN emps%NOTFOUND;
         UPDATE "employee"
-        SET "salary" = sal + 100
+        SET "salary" = sal + ammount
         WHERE "employeeID" = eID AND "endDate" IS NULL;
     END LOOP;
 END;
 
 -- Len zamestanec s employeeID = 1 by mal mať o 100 väčší plat
 SELECT * FROM "employee";
-CALL raise_by_date('2020-01-01');
+CALL raise_by_date('2020-01-01', 100);
 SELECT * FROM "employee";
 
 
+-- Koľko objednávok s akou hodnotou v roku x
+CREATE OR REPLACE PROCEDURE year_revenue ( inYear IN NUMBER) IS
+    "revenue" "order"."orderPrice"%TYPE := 0.;
+    "order_count" NUMBER := 0;
+    total_products_sold "orderSpecification"."productQuantity"%TYPE;
+    "order_date" "order"."orderDate"%TYPE;
+    "order_price" "order"."orderPrice"%TYPE;
+    CURSOR "orders" IS SELECT "orderDate", "orderPrice" FROM "order" "o", "customerOrder" "co" WHERE "co"."customerOrderID" = "o"."orderID";
+BEGIN
+    SELECT SUM(os."productQuantity") INTO total_products_sold FROM "customerOrder" co, "orderSpecification" os
+    WHERE co."customerOrderID" = os."orderID";
 
+    OPEN "orders";
+    LOOP
+        FETCH "orders" INTO "order_date", "order_price";
+        EXIT WHEN "orders"%NOTFOUND;
+        IF EXTRACT(YEAR FROM "order_date") = inYear THEN
+            "revenue" := "revenue"+ "order_price";
+            "order_count" := "order_count"+1;
+        END IF;
+    END LOOP;
+    CLOSE "orders";
+    DBMS_OUTPUT.PUT_LINE('In year ' || inYear || ': ' || "order_count" || ' orders were made, with total revenue of ' || "revenue" || '€.');
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            BEGIN
+                DBMS_OUTPUT.put_line('There were no orders made in year ' ||inYear|| '.');
+            END;
+        WHEN VALUE_ERROR THEN
+            BEGIN
+                DBMS_OUTPUT.put_line('Bad format of year given. Expected YY');
+            END;
+END;
+
+-- TEST
+BEGIN year_revenue(2021); END;
 
 
 
@@ -358,6 +393,7 @@ GRANT ALL ON "product" TO "XBARTK07";
 GRANT ALL ON "warehouseStock" TO "XBARTK07";
 GRANT ALL ON "priceHistory" TO "XBARTK07";
 
+/* TODO: FIX
 GRANT EXECUTE on "customer_total_money_spent" TO "XBARTK07";
 
 DROP MATERIALIZED VIEW "customer_total_money_spent";
@@ -379,3 +415,4 @@ select * FROM "customerOrder";
 
 -- Materializovany pohlad sa nezmenil
 select * FROM "customer_total_money_spent";
+*/
