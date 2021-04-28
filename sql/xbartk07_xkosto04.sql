@@ -135,15 +135,15 @@ CREATE SEQUENCE userID_seq;
 ----------employees----------
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Peter', 'Dlhy', '+421900000001', 'dlhy.peter@gmail.com');
 INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "salary", "bankAccount")
-VALUES (userID_seq.currval, 'Bratislava, Slovakia', '05-AUG-18', 1500, '111333/2700');
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '05-AUG-2018', 1500, '111333/2700');
 
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Matej', 'Kratky', '+421900000002', 'matko.kratky@gmail.com');
 INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "endDate", "salary", "bankAccount")
-VALUES (userID_seq.currval, 'Bratislava, Slovakia', '25-MAY-19', '25-AUG-19', 700, '86-199488014/1111');
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '25-MAY-2019', '25-AUG-19', 700, '86-199488014/1111');
 
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Elizabeth', 'Pekna', '+421900000003', 'eli.kraska@gmail.com');
 INSERT INTO "employee" ("employeeID", "homeAddress", "startDate", "salary", "bankAccount")
-VALUES (userID_seq.currval, 'Bratislava, Slovakia', '01-JAN-21', 1000, '111333/2700');
+VALUES (userID_seq.currval, 'Bratislava, Slovakia', '01-JAN-2021', 1000, '111333/2700');
 
 ----------customers----------
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Eugen', 'Cudny', '+421900000004', 'cudak.eugen@gmail.com');
@@ -168,17 +168,17 @@ VALUES ('Stolicka', 'Pevna stolicka so zeleznou konstrukciou', 'Kuchyna', 1);
 
 ----------prices----------
 INSERT INTO "priceHistory" ("startDate", "endDate", "price", "productID")
-VALUES ('01-Jan-21', '01-Mar-21', 248.99, 1);
+VALUES ('01-Jan-2021', '01-Mar-2021', 248.99, 1);
 INSERT INTO "priceHistory" ("startDate", "price", "productID")
-VALUES ('02-Mar-21', 235, 1);
+VALUES ('02-Mar-2021', 235, 1);
 INSERT INTO "priceHistory" ("startDate", "price", "productID")
-VALUES ('01-Jan-21', 5.99, 2);
+VALUES ('01-Jan-2021', 5.99, 2);
 INSERT INTO "priceHistory" ("startDate", "price", "productID")
-VALUES ('01-Jan-21', 60, 3);
+VALUES ('01-Jan-2021', 60, 3);
 INSERT INTO "priceHistory" ("startDate", "price", "productID")
-VALUES ('01-Jan-21', 20, 4);
+VALUES ('01-Jan-2021', 20, 4);
 INSERT INTO "priceHistory" ("startDate", "price", "productID")
-VALUES ('01-Jan-21', 35.99, 5);
+VALUES ('01-Jan-2021', 35.99, 5);
 
 ----------stock----------
 INSERT INTO "warehouseStock" ("productID", "quantity")  VALUES (1, 5);
@@ -189,11 +189,11 @@ INSERT INTO "warehouseStock" ("productID", "quantity")  VALUES (5, 10);
 
 ----------customer_orders----------
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress")
-VALUES ('25-JAN-21', 31.98, 'Tulipánová 35, Bratislava, Slovakia');
+VALUES ('25-JAN-2021', 31.98, 'Tulipánová 35, Bratislava, Slovakia');
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID")
-VALUES ('26-JAN-21', 180, 'Agátová 75, Bratislava, Slovakia', 1);
+VALUES ('26-JAN-2021', 180, 'Agátová 75, Bratislava, Slovakia', 1);
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID")
-VALUES ('27-JAN-21', 20, 'Balíková 111/23, Bratislava, Slovakia', 3, 77);
+VALUES ('27-JAN-2021', 20, 'Balíková 111/23, Bratislava, Slovakia', 3, 77);
 
 INSERT INTO "customerOrder" VALUES (1, 4, 'Na ceste');
 INSERT INTO "customerOrder" VALUES (2, 4, 'Nedostupne');
@@ -209,9 +209,9 @@ INSERT INTO "customerComplaint" VALUES (2, 'Preco to tak dlho trva??? Prajem pek
 
 ----------warehouse_orders----------
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID")
-VALUES ('20-JAN-21', 1000, 'Západná 721, Bratislava, Slovakia', 1, 1);
+VALUES ('20-JAN-2021', 1000, 'Západná 721, Bratislava, Slovakia', 1, 1);
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress", "workerID", "courierOrderID")
-VALUES ('15-JAN-21', 300, 'Západná 721, Bratislava, Slovakia', 2, 1);
+VALUES ('15-JAN-2021', 300, 'Západná 721, Bratislava, Slovakia', 2, 1);
 
 INSERT INTO "warehouseOrder" VALUES (1, 'Drevo s.r.o', 'Vybavena');
 INSERT INTO "warehouseOrder" VALUES (2, 'Drevo s.r.o', 'Na ceste');
@@ -296,12 +296,12 @@ VALUES ('10-Mar-21', 25, 5);
 -- PO priceHistory
 SELECT * FROM "priceHistory" WHERE "productID" = 5;
 
-
+-- Automatické generovanie ID pre users
 CREATE OR REPLACE TRIGGER auto_id
     BEFORE INSERT ON "user"
     FOR EACH ROW
 BEGIN
-    IF: NEW."userID" IS NULL THEN
+    IF  :NEW."userID" IS NULL THEN
         :NEW."userID" := userID_seq.nextval;
     END IF;
 END;
@@ -312,3 +312,27 @@ INSERT INTO "user"("firstName", "lastName", "phoneNumber", "emailAddress") VALUE
 INSERT INTO "user"("firstName", "lastName", "phoneNumber", "emailAddress") VALUES ('Ivan', 'Krehky', '+421900000004', 'krehky.ivan@gmail.com');
 -- PO user
 SELECT * FROM "user";
+
+
+-----------------------------PROCEDURES-----------------------------
+-- Zvýš plat všetkým aktuálnym zamestancom ktorí nastúpili pred daným dátumom
+CREATE OR REPLACE PROCEDURE raise_by_date (date_str VARCHAR) IS
+    sal "employee"."salary"%type;
+    eID "employee"."employeeID"%type;
+    CURSOR emps IS SELECT "employeeID", "salary"
+        FROM "employee" e WHERE e."startDate" < to_date(date_str,'YYYY-MM-DD');
+BEGIN
+    OPEN emps;
+    LOOP
+        FETCH emps INTO eID, sal;
+        EXIT WHEN emps%NOTFOUND;
+        UPDATE "employee"
+        SET "salary" = sal + 100
+        WHERE "employeeID" = eID AND "endDate" IS NULL;
+    END LOOP;
+END;
+
+-- Len zamestanec s employeeID = 1 by mal mať o 100 väčší plat
+SELECT * FROM "employee";
+CALL raise_by_date('2020-01-01');
+SELECT * FROM "employee";
