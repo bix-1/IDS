@@ -12,6 +12,8 @@ drop table "user" cascade constraints;
 drop table "customer" cascade constraints;
 drop table "employee" cascade constraints;
 
+DROP MATERIALIZED VIEW "customer_total_money_spent";
+
 
 ------------------------------ACCOUNTS------------------------------
 CREATE TABLE "user"
@@ -339,7 +341,7 @@ SELECT * FROM "employee";
 
 
 -- Koľko objednávok s akou hodnotou v roku x
-CREATE OR REPLACE PROCEDURE year_revenue ( inYear IN NUMBER) IS
+CREATE OR REPLACE PROCEDURE yearly_sales ( inYear IN NUMBER) IS
     "revenue" "order"."orderPrice"%TYPE := 0.;
     "order_count" NUMBER := 0;
     total_products_sold "orderSpecification"."productQuantity"%TYPE;
@@ -373,12 +375,24 @@ BEGIN
 END;
 
 -- TEST
-BEGIN year_revenue(2021); END;
+BEGIN yearly_sales(2021); END;
 
 
+-- ktory produkt v kategorii "Spalna" bol objednany aspoň raz, koľkokrát dokopy a koľkátimi zákazníkmi
+EXPLAIN PLAN FOR
+SELECT p."productName" , SUM(os."productQuantity") as "pocet", COUNT(co."customerID") as "pocetZakaznikov" FROM "product" p JOIN "orderSpecification" os ON os."productID" = p."productID" JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
+where p."category" LIKE '%Spalna%' GROUP BY p."productName" HAVING SUM(os."productQuantity") >= 1 ;
+-- Zobrazenie planu
+SELECT * FROM TABLE ( DBMS_XPLAN.DISPLAY);
 
-
-
+-- Index pre nazvy produktov
+CREATE INDEX "product_name" on "product"("productName");
+-- dalsi pokus s indexom
+EXPLAIN PLAN FOR
+SELECT p."productName" , SUM(os."productQuantity") as "pocet", COUNT(co."customerID") as "pocetZakaznikov" FROM "product" p JOIN "orderSpecification" os ON os."productID" = p."productID" JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
+where p."category" LIKE '%Spalna%' GROUP BY p."productName" HAVING SUM(os."productQuantity") >= 1 ;
+-- Zobrazenie planu
+SELECT * FROM TABLE ( DBMS_XPLAN.DISPLAY);
 
 
 GRANT ALL ON "user" TO "XBARTK07";
@@ -393,26 +407,22 @@ GRANT ALL ON "product" TO "XBARTK07";
 GRANT ALL ON "warehouseStock" TO "XBARTK07";
 GRANT ALL ON "priceHistory" TO "XBARTK07";
 
-/* TODO: FIX
-GRANT EXECUTE on "customer_total_money_spent" TO "XBARTK07";
+GRANT EXECUTE on yearly_sales TO "XBARTK07";
 
-DROP MATERIALIZED VIEW "customer_total_money_spent";
 CREATE MATERIALIZED VIEW "customer_total_money_spent" AS
-    SELECT "u"."userID", "u"."firstName", "u"."lastName", SUM("o"."orderPrice") as "totalSpent"
-    FROM "customerOrder" "co","order" "o","user" "u"
-    LEFT JOIN "customer" "c" on "u"."userID" = "c"."customerID"
-    WHERE "co"."customerID" = "u"."userID" and "co"."customerOrderID" = "o"."orderID"
-    GROUP BY "u"."userID", "u"."firstName", "u"."lastName";
+    SELECT u."userID", u."firstName", u."lastName", SUM(o."orderPrice") as "totalSpent"
+    FROM "customerOrder" co,"order" o,"user" u
+    LEFT JOIN "customer" c on u."userID" = c."customerID"
+    WHERE co."customerID" = u."userID" and co."customerOrderID" = o."orderID"
+    GROUP BY u."userID", u."firstName", u."lastName";
 
--- Vypis materializovaneho pohladu
-select * FROM "customer_total_money_spent";
+SELECT * FROM "customer_total_money_spent";
 
 -- Pridanie dalsej objednavky
 INSERT INTO "order" ("orderDate", "orderPrice", "DeliveryAddress") VALUES ('20-FEB-21', 10., 'Tulipánová 35, Bratislava, Slovakia');
 INSERT INTO "customerOrder" VALUES (6, 4, 'Na ceste');
-select * FROM "order";
-select * FROM "customerOrder";
+SELECT * FROM "order";
+SELECT * FROM "customerOrder";
 
 -- Materializovany pohlad sa nezmenil
-select * FROM "customer_total_money_spent";
-*/
+SELECT * FROM "customer_total_money_spent";
