@@ -382,30 +382,39 @@ WHERE EXTRACT(YEAR FROM "orderDate") = 2021;
 BEGIN yearly_sales(2021); END;
 
 
--- ktorý produkt v kategorii "Spalna" bol objednaný aspoň raz, koľkokrát dokopy a koľkátimi zákazníkmi
+-- ktorý produkt v kategorii "Spalna" bol objednaný aspoň raz, koľko kusov dokopy a koľkátimi zákazníkmi
 EXPLAIN PLAN FOR
-SELECT p."productName" , SUM(os."productQuantity") as "pocet", COUNT(co."customerID") as "pocetZakaznikov" FROM "product" p
+SELECT p."productName" , SUM(os."productQuantity") as "productCount", COUNT(co."customerID") as "customersCount"
+FROM "product" p
 JOIN "orderSpecification" os ON os."productID" = p."productID"
 JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
-where p."category" LIKE '%Spalna%' GROUP BY p."productName" HAVING SUM(os."productQuantity") >= 1 ;
+WHERE p."category" LIKE '%Spalna%'
+GROUP BY p."productName"
+HAVING SUM(os."productQuantity") >= 1 ;
 -- Zobrazenie planu
 SELECT * FROM TABLE ( DBMS_XPLAN.DISPLAY);
 
 -- Index pre nazvy produktov
-Drop INDEX "index_product_name";
 Drop INDEX "index_order_spec";
-CREATE INDEX "index_product_name" on "product"("productName");
+Drop INDEX "index_product_name";
 Create INDEX  "index_order_spec" on "orderSpecification"("productID");
+CREATE INDEX "index_product_name" on "product"("productName");
+
+
 -- dalsi pokus s indexom
 EXPLAIN PLAN FOR
-SELECT p."productName" , SUM(os."productQuantity") as "pocet", COUNT(co."customerID") as "pocetZakaznikov" FROM "product" p
+SELECT p."productName" , SUM(os."productQuantity") as "productCount", COUNT(co."customerID") as "customersCount"
+FROM "product" p
 JOIN "orderSpecification" os ON os."productID" = p."productID"
 JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
-where p."category" LIKE '%Spalna%' GROUP BY p."productName" HAVING SUM(os."productQuantity") >= 1 ;
+WHERE p."category" LIKE '%Spalna%'
+GROUP BY p."productName"
+HAVING SUM(os."productQuantity") >= 1 ;
+
 -- Zobrazenie indexovaneho planu
 SELECT * FROM TABLE ( DBMS_XPLAN.DISPLAY);
 
-
+--- Pridelenie práv členovi týmu
 GRANT ALL ON "user" TO "XBARTK07";
 GRANT ALL ON "employee" TO "XBARTK07";
 GRANT ALL ON "customer" TO "XBARTK07";
@@ -419,13 +428,16 @@ GRANT ALL ON "warehouseStock" TO "XBARTK07";
 GRANT ALL ON "priceHistory" TO "XBARTK07";
 
 GRANT EXECUTE on yearly_sales TO "XBARTK07";
+GRANT EXECUTE on raise_by_date TO "XBARTK07";
 
+
+--- Materializovany pohlad, ktorý obsahuje všetkých zákazníkov, ktorý už vykonali nejakú objednávku, ich počet a celkovú sumu objednávok
 CREATE MATERIALIZED VIEW "customer_total_money_spent" AS
-    SELECT u."userID", u."firstName", u."lastName", SUM(o."orderPrice") as "totalSpent"
-    FROM "customerOrder" co,"order" o,"user" u
-    LEFT JOIN "customer" c on u."userID" = c."customerID"
-    WHERE co."customerID" = u."userID" and co."customerOrderID" = o."orderID"
-    GROUP BY u."userID", u."firstName", u."lastName";
+SELECT u."userID", u."firstName", u."lastName", COUNT(o."orderID") as "orderCount",SUM(o."orderPrice") as "totalSpent"
+FROM "customerOrder" co,"order" o,"user" u
+LEFT JOIN "customer" c on u."userID" = c."customerID"
+WHERE co."customerID" = u."userID" and co."customerOrderID" = o."orderID"
+GROUP BY u."userID", u."firstName", u."lastName";
 
 SELECT * FROM "customer_total_money_spent";
 
