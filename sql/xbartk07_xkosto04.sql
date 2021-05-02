@@ -374,8 +374,10 @@ BEGIN
             END;
 END;
 
---- Súčet "orderPrice" sa zhoduje z výstupom procedúry "yearly_sales"
-SELECT o."orderID","orderDate", "orderPrice"  FROM "customerOrder" co JOIN "order" o ON co."customerOrderID" = o."orderID" WHERE EXTRACT(YEAR FROM "orderDate") = 2021;
+--- Súčet "orderPrice" a "productQuantity" sa zhoduje z výstupom procedúry "yearly_sales"
+SELECT o."orderID","orderDate", "orderPrice", "productQuantity" FROM "customerOrder" co JOIN "order" o ON co."customerOrderID" = o."orderID"
+JOIN "orderSpecification" os on o."orderID" = os."orderID"
+WHERE EXTRACT(YEAR FROM "orderDate") = 2021;
 -- TEST
 BEGIN yearly_sales(2021); END;
 
