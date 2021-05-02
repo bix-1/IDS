@@ -361,7 +361,7 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE "orders";
-    DBMS_OUTPUT.PUT_LINE('In year ' || inYear || ': ' || "order_count" || ' orders were made, where '|| total_products_sold ||' products total' ||
+    DBMS_OUTPUT.put_line('In year ' || inYear || ': ' || "order_count" || ' orders were made, where '|| total_products_sold ||' products total' ||
                          ' were sold with total revenue of ' || "revenue" || '€.');
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
