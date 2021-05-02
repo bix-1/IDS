@@ -132,7 +132,6 @@ CREATE TABLE "orderSpecification"
 DROP SEQUENCE userID_seq;
 CREATE SEQUENCE userID_seq;
 
-
 -----------------------------INSERTS-----------------------------
 ----------employees----------
 INSERT INTO "user" VALUES (userID_seq.nextval, 'Peter', 'Dlhy', '+421900000001', 'dlhy.peter@gmail.com');
@@ -362,7 +361,8 @@ BEGIN
         END IF;
     END LOOP;
     CLOSE "orders";
-    DBMS_OUTPUT.PUT_LINE('In year ' || inYear || ': ' || "order_count" || ' orders were made, with total revenue of ' || "revenue" || '€.');
+    DBMS_OUTPUT.PUT_LINE('In year ' || inYear || ': ' || "order_count" || ' orders were made, where '|| total_products_sold ||' products total' ||
+                         ' were sold with total revenue of ' || "revenue" || '€.');
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             BEGIN
@@ -370,10 +370,12 @@ BEGIN
             END;
         WHEN VALUE_ERROR THEN
             BEGIN
-                DBMS_OUTPUT.put_line('Bad format of year given. Expected YY');
+                DBMS_OUTPUT.put_line('Bad format of year given. Expected YYYY');
             END;
 END;
 
+--- Súčet "orderPrice" sa zhoduje z výstupom procedúry "yearly_sales"
+SELECT o."orderID","orderDate", "orderPrice"  FROM "customerOrder" co JOIN "order" o ON co."customerOrderID" = o."orderID" WHERE EXTRACT(YEAR FROM "orderDate") = 2021;
 -- TEST
 BEGIN yearly_sales(2021); END;
 
@@ -386,12 +388,16 @@ where p."category" LIKE '%Spalna%' GROUP BY p."productName" HAVING SUM(os."produ
 SELECT * FROM TABLE ( DBMS_XPLAN.DISPLAY);
 
 -- Index pre nazvy produktov
-CREATE INDEX "product_name" on "product"("productName");
+Drop INDEX "index_product_name";
+Drop INDEX "index_order_spec";
+CREATE INDEX "index_product_name" on "product"("productName");
+Create INDEX  "index_order_spec" on "orderSpecification"("productID");
 -- dalsi pokus s indexom
 EXPLAIN PLAN FOR
-SELECT p."productName" , SUM(os."productQuantity") as "pocet", COUNT(co."customerID") as "pocetZakaznikov" FROM "product" p JOIN "orderSpecification" os ON os."productID" = p."productID" JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
-where p."category" LIKE '%Spalna%' GROUP BY p."productName" HAVING SUM(os."productQuantity") >= 1 ;
--- Zobrazenie planu
+SELECT p."productName" , SUM(os."productQuantity") as "pocet", COUNT(co."customerID") as "pocetZakaznikov" FROM "product" p JOIN "orderSpecification" os ON os."productID" = p."productID"
+JOIN "customerOrder" co ON os."orderID" = co."customerOrderID"
+where p."category" LIKE 'Spalna' GROUP BY p."productName" HAVING SUM(os."productQuantity") >= 1 ;
+-- Zobrazenie indexovaneho planu
 SELECT * FROM TABLE ( DBMS_XPLAN.DISPLAY);
 
 
